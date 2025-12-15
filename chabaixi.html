@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>茶百戏 - 点茶之美</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="chabaixi" class="page interaction-page">
+    <div class="paint-btn-group">
+      <button class="paint-btn" onclick="undoDraw()">撤销</button>
+      <button class="paint-btn" onclick="resetCanvas()">重置</button>
+    </div>
+    <h2 class="interaction-title">茶百戏</h2>
+    <div class="interaction-area">
+      <div class="drawing-canvas" id="drawing-canvas" ontouchstart="startDraw(event)" ontouchmove="draw(event)" ontouchend="stopDraw()" onmousedown="startDraw(event)" onmousemove="draw(event)" onmouseup="stopDraw()" onmouseleave="stopDraw()"></div>
+      <div class="paint-tip">在茶汤表面绘制图案</div>
+    </div>
+    <div class="nav-buttons">
+      <a id="prev-btn" class="nav-btn" href="interaction6.html">上一页</a>
+      <a id="next-btn" class="nav-btn" href="artifact.html">下一页</a>
+    </div>
+  </div>
+  <script src="script.js"></script>
+  <script>
+    // 茶百戏绘制功能
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let drawingPath = [];
+    
+    function startDraw(event) {
+      event.preventDefault();
+      isDrawing = true;
+      
+      const canvas = document.getElementById('drawing-canvas');
+      const rect = canvas.getBoundingClientRect();
+      
+      // 获取初始位置
+      let x, y;
+      if (event.touches) {
+        x = event.touches[0].clientX - rect.left;
+        y = event.touches[0].clientY - rect.top;
+      } else {
+        x = event.clientX - rect.left;
+        y = event.clientY - rect.top;
+      }
+      
+      lastX = x;
+      lastY = y;
+      
+      // 添加起始点
+      drawingPath.push({ type: 'start', x, y });
+    }
+    
+    function draw(event) {
+      if (!isDrawing) return;
+      event.preventDefault();
+      
+      const canvas = document.getElementById('drawing-canvas');
+      const rect = canvas.getBoundingClientRect();
+      
+      // 获取当前位置
+      let x, y;
+      if (event.touches) {
+        x = event.touches[0].clientX - rect.left;
+        y = event.touches[0].clientY - rect.top;
+      } else {
+        x = event.clientX - rect.left;
+        y = event.clientY - rect.top;
+      }
+      
+      // 在画布上绘制
+      createDrawingDot(x, y);
+      
+      // 添加到路径
+      drawingPath.push({ type: 'draw', x, y });
+      
+      lastX = x;
+      lastY = y;
+    }
+    
+    function stopDraw() {
+      isDrawing = false;
+      
+      // 完成绘制路径
+      if (drawingPath.length > 0) {
+        drawingPath.push({ type: 'end' });
+      }
+    }
+    
+    function createDrawingDot(x, y) {
+      const canvas = document.getElementById('drawing-canvas');
+      const dot = document.createElement('div');
+      dot.className = 'drawing-dot';
+      dot.style.left = `${x - 4}px`;
+      dot.style.top = `${y - 4}px`;
+      canvas.appendChild(dot);
+      
+      // 添加绘制动画
+      dot.style.transition = 'opacity 0.5s';
+      setTimeout(() => {
+        dot.style.opacity = '0.8';
+      }, 10);
+    }
+    
+    function undoDraw() {
+      const canvas = document.getElementById('drawing-canvas');
+      const dots = canvas.querySelectorAll('.drawing-dot');
+      
+      if (dots.length > 0) {
+        dots[dots.length - 1].remove();
+        
+        // 更新路径
+        if (drawingPath.length > 0) {
+          drawingPath.pop();
+        }
+      }
+    }
+    
+    function resetCanvas() {
+      const canvas = document.getElementById('drawing-canvas');
+      const dots = canvas.querySelectorAll('.drawing-dot');
+      
+      dots.forEach(dot => dot.remove());
+      drawingPath = [];
+    }
+  </script>
+</body>
+</html>
